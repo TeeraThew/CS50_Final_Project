@@ -6,7 +6,9 @@ import os
 import sqlite3
 
 from sqlalchemy import create_engine, Table, MetaData, text, Integer, String, Sequence
-from sqlalchemy.future.orm import Session as sql_Session
+
+from sqlalchemy.ext.automap import automap_base
+
 
 # Flask-SQLAlchemy is an extension for Flask that adds support for SQLAlchemy to your application.
 from flask_sqlalchemy import SQLAlchemy
@@ -24,10 +26,61 @@ from helpers import (
     validate_password
 )
 
-# Create a connection to the database "database_name.db" in the current working directory, 
-# implicitly creating it if it does not exist.
-# The returned Connection object con represents the connection to the on-disk database.
-conn = sqlite3.connect('database.db')
+
+# Create an instance of the "Flask" class and pass the Flask constructor the path of the correct module 
+#   so that Flask knows where to look for resources such as templates and static files.
+app = Flask(__name__)
+
+#  Register our own filters in Jinja
+app.jinja_env.filters["usd"] = usd
+
+# Configure session to use filesystem (instead of signed cookies)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+# app.config["SECRET_KEY"] = "x!\x8d\x8d\x974\xae\xa2\xc6\x05\x89\x00"   
+# configure the SQLite database, relative to the app instance folder
+
+# db = SQLAlchemy(app)
+
+
+# users = db.Table('users', db.metadata, autoload=True, autoload_with=db.engine)
+
+# Base = automap_base()
+# Base.prepare(db.engine, reflect=True)
+# users = Base.classes.users
+
+Session(app)
+
+
+# # create the extension
+# db = SQLAlchemy()
+
+# # initialize the app with the extension
+# db.init_app(app)
+
+# The name of the database file (.db file)
+db_name = "database.db"
+
+
+# db = create_engine('sqlite:///dogscats.db')
+# metadata = MetaData(bind=db)
+# users = Table('users', metadata, autoload=True)
+# cases = Table('cases', metadata, autoload=True)
+
+# # Create a connection to the database "database_name.db" in the current working directory, 
+# # implicitly creating it if it does not exist.
+# # The returned Connection object con represents the connection to the on-disk database.
+# conn = sqlite3.connect('database.db', connect_args={"check_same_thread": False})
+
+# conn = create_engine(
+# 'sqlite:///database.db',
+# connect_args={'check_same_thread': False}
+# )
+
+conn = sqlite3.connect('database.db', check_same_thread=False)
+
 
 # # Alternatively, we can create an SQLite database existing only in memory (RAM), and open a connection to it,
 # # Note that, in this case, the database will only exist temporarily and will be refreshed every time you run the program
@@ -46,61 +99,34 @@ conn.row_factory = dict_factory
 # Call con.cursor() to create the Cursor
 cur = conn.cursor()
 
-def main():
-    # Create a database table named "users"
-    # Execute the CREATE TABLE statement by calling cur.execute(...)
-    # Used only when we want to create a table for the first time
-    # Use the "IF NOT EXISTS" clause to avoid an error when a table with the same name already exists
-    cur.execute("""CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-    username TEXT NOT NULL, 
-    hash TEXT NOT NULL, 
-    cash NUMERIC NOT NULL DEFAULT 0.00
-    )""")
+# Create a database table named "users"
+# Execute the CREATE TABLE statement by calling cur.execute(...)
+# Used only when we want to create a table for the first time
+# Use the "IF NOT EXISTS" clause to avoid an error when a table with the same name already exists
+cur.execute("""CREATE TABLE IF NOT EXISTS users (
+id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+username TEXT NOT NULL, 
+hash TEXT NOT NULL, 
+cash NUMERIC NOT NULL DEFAULT 0.00
+)""")
+
+# Creates an index named "username" on the "username" column in the "users" table
+cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS username ON users (username)")
+
+# Create a table named "transactions"
+cur.execute("""CREATE TABLE IF NOT EXISTS transactions (
+id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+user_id INTEGER,
+date DATE,
+account TEXT,
+category TEXT,
+description TEXT,
+income	REAL NOT NULL DEFAULT 0.00,
+expense	REAL NOT NULL DEFAULT 0.00,
+FOREIGN KEY(user_id) REFERENCES users(id)
+)""")
     
-    # Creates an index named "username" on the "username" column in the "users" table
-    cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS username ON users (username)")
     
-    # Create a table named "transactions"
-    cur.execute("""CREATE TABLE IF NOT EXISTS transactions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-    user_id INTEGER,
-    date DATE,
-    account	TEXT,
-    category TEXT,
-    description TEXT,
-    income	REAL NOT NULL DEFAULT 0.00,
-    expense	REAL NOT NULL DEFAULT 0.00,
-    FOREIGN KEY(user_id) REFERENCES users(id)
-    )""")
-    
-# Create an instance of the "Flask" class and pass the Flask constructor the path of the correct module 
-#   so that Flask knows where to look for resources such as templates and static files.
-app = Flask(__name__)
-
-#  Register our own filters in Jinja
-app.jinja_env.filters["usd"] = usd
-
-# Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-
-# app.config["SECRET_KEY"] = "x!\x8d\x8d\x974\xae\xa2\xc6\x05\x89\x00"   
-# configure the SQLite database, relative to the app instance folder
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///finance.db"
-
-Session(app)
-
-# # create the extension
-# db = SQLAlchemy()
-
-# # initialize the app with the extension
-# db.init_app(app)
-
-# The name of the database file (.db file)
-db_name = "database.db"
-
-
 # Ensure responses after each request aren't cached
 @app.after_request
 def after_request(response):
@@ -152,6 +178,7 @@ def login():
 
         # Query database for username
         username = request.form.get("username")
+        # print(usern)
         rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
         rows = rows.fetchall()
 
@@ -235,14 +262,15 @@ def register():
 
         hash = generate_password_hash(request.form.get("password"))
         # Insert user's data into database
-        try:
-            new_user = cur.execute(
-                "INSERT INTO users (username, hash) VALUES(:username, :hash)", {'username': username, 'hash': hash}
-            )
-            new_user = new_user.fetchall()
-            
-        except:
-            return apology("username already exists")
+        with conn:
+            try:
+                new_user = cur.execute(
+                    "INSERT INTO users (username, hash) VALUES(:username, :hash)", {'username': username, 'hash': hash}
+                )
+                new_user = new_user.fetchall()
+                
+            except:
+                return apology("username already exists")
 
         # Remember which user has logged in
         session["user_id"] = new_user
