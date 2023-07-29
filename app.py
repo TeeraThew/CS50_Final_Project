@@ -141,10 +141,48 @@ def after_request(response):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+    # Get user's id of current user
+    user_id = session["user_id"]
+
+    if not user_id:
+        return render_template("index.html")
+
+    # Get the balance of each account
+    transactions_db = cur.execute(
+        "SELECT * FROM transactions WHERE user_id = :user_id GROUP BY account", {'user_id': user_id}
+    )
+    transactions_db = transactions_db.fetchall()
+
+    # Add the key "balance" to each dictionary in the list of transactions
+    for row in transactions_db:
+        row["balance"] = row["income"] - row["expense"]
+
+    # Total income, total expense, total balance from all accounts
+    income_total = 0
+    expense_total = 0
+    balance_total = 0
+    for row in transactions_db:
+        income_total += row["income"]
+        expense_total += row["expense"]
+        balance_total += row["balance"]
+        
+    # Find how much cash the user currently has in the table "users"
+    user_cash_db = cur.execute("SELECT cash FROM users WHERE id = :user_id", {'user_id': user_id})
+    user_cash_db = user_cash_db.fetchall()
+    user_cash = user_cash_db[0]["cash"]
+
+    # Render homepage
+    return render_template(
+        "index.html",
+        transactions_db=transactions_db,
+        income_total=income_total,
+        expense_total=expense_total,
+        balance_total=balance_total,
+        user_cash=user_cash
+    )
 
 
-@app.route("/buy", methods=["GET", "POST"])
+@app.route("/add_transactions", methods=["GET", "POST"])
 @login_required
 def buy():
     """Buy shares of stock"""
@@ -218,13 +256,12 @@ def quote():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
-
-    # User reached route via POST (as by submitting a form via POST)
+    # If user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         confirmed_password = request.form.get("confirmation")
-
+        
         # Ensure username was submitted
         if not username:
             return apology("must provide username")
@@ -247,30 +284,32 @@ def register():
                 "password must have at least one digit and one special character"
             )
 
-        # Ensure the registered username have not existed before
-        # # Query database for username
+        # Ensure the username does not exist in the database
         rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
-        rows = rows.fetchall()
+        # Here, no need to use "rows = rows.fetchall()""
         if rows:
             return apology("username already exists")
 
         # Another way:
-        # usernames = db.execute("SELECT username FROM users")
+        # usernames = cur.execute("SELECT username FROM users")
+        # usernames = usernames.fetchall()
         # Check if the username already exists within the list "usernames" of dictionaries
         # if any(dict["username"] == username for dict in usernames):
         #   return apology("username already exists", 403)
 
         hash = generate_password_hash(request.form.get("password"))
-        # Insert user's data into database
-        with conn:
-            try:
+        # Insert user data into database
+        try:
+            with conn:
                 new_user = cur.execute(
                     "INSERT INTO users (username, hash) VALUES(:username, :hash)", {'username': username, 'hash': hash}
                 )
                 new_user = new_user.fetchall()
-                
-            except:
-                return apology("username already exists")
+        except:
+            return apology("cannot insert user data")  
+        # Another way is to show an auto-generated error message: 
+        # except Exception as e:
+        #     return apology(str(e))
 
         # Remember which user has logged in
         session["user_id"] = new_user
@@ -279,7 +318,7 @@ def register():
         flash("You have registered!")
         return redirect("/")
 
-    # User reached route via GET (as by clicking a link or via redirect)
+    # User reached route via GET (as by clicking a link or entering the URL or via redirect)
     else:
         return render_template("register.html")
 

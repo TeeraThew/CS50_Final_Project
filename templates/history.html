@@ -9,20 +9,26 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th class="text-start">Symbol</th>
-                    <th class="text-end">Shares</th>
-                    <th class="text-end">Price</th>
-                    <th class="text-end">Transacted</th>
+                    <th class="text-start">Date</th>
+                    <th class="text-start">Account</th>
+                    <th class="text-start">Category</th>
+                    <th class="text-start">Description</th>
+                    <th class="text-end">Income</th>
+                    <th class="text-end">Expense</th>
+                    <th class="text-end">Balance</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- TODO: Loop through the database entries to display them in this table -->
-                {% for row in transactions %}
+                {% for row in transactions_db %}
                     <tr>
-                        <td class="text-start">{{ row["symbol"] }}</td>
-                        <td class="text-end">{{ row["shares"] }}</td>
-                        <td class="text-end">{{ row["price"] | usd }}</td>
-                        <td class="text-end">{{ row["date"] }}</td>
+                        <td class="text-start">{{ row["date"] }}</td>
+                        <td class="text-start">{{ row["account"] }}</td>
+                        <td class="text-start">{{ row["category"] }}</td>
+                        <td class="text-start">{{ row["description"] }}</td>
+                        <td class="text-end">{{ row["income"] | usd }}</td>
+                        <td class="text-end">{{ row["expense"] | usd }}</td>
+                        <td class="text-end">{{ row["balance"] | usd }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

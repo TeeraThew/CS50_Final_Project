@@ -38,6 +38,28 @@ transactions
     - expense			real
     - balance 			real
 
+Add transactions
+    - date 				date
+    - account			text
+    - category			text
+    - description	    text
+    - income			real
+    - expense			real
+    - balance 			real
+
+Edit transactions
+
+Delete transactions
+
+
+
+
+
+
+
+
+
+
 
 References and useful resources
 - CS50's Introduction to Computer Science (Taught by David J. Malan)
