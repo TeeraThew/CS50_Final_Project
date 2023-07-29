@@ -6,7 +6,6 @@ import subprocess
 import urllib
 import uuid
 import re
-
 from flask import redirect, render_template, session
 from functools import wraps
 
@@ -29,8 +28,7 @@ def apology(message, code=400):
 def login_required(f):
     """
     Decorate routes to require login.
-
-    http://flask.pocoo.org/docs/0.12/patterns/viewdecorators/
+    https://flask.palletsprojects.com/en/2.3.x/views/#view-decorators
     """
     @wraps(f)
     def decorated_function(*args, **kwargs):

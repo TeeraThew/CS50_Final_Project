@@ -13,7 +13,7 @@ from sqlalchemy.ext.automap import automap_base
 # Flask-SQLAlchemy is an extension for Flask that adds support for SQLAlchemy to your application.
 from flask_sqlalchemy import SQLAlchemy
 
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -149,21 +149,21 @@ def index():
 
     # Get the balance of each account
     transactions_db = cur.execute(
-        "SELECT * FROM transactions WHERE user_id = :user_id GROUP BY account", {'user_id': user_id}
+        "SELECT account, SUM(income) AS total_income, SUM(expense) AS total_expense  FROM transactions WHERE user_id = :user_id GROUP BY account", {'user_id': user_id}
     )
     transactions_db = transactions_db.fetchall()
 
     # Add the key "balance" to each dictionary in the list of transactions
     for row in transactions_db:
-        row["balance"] = row["income"] - row["expense"]
+        row["balance"] = row["total_income"] - row["total_expense"]
 
     # Total income, total expense, total balance from all accounts
     income_total = 0
     expense_total = 0
     balance_total = 0
     for row in transactions_db:
-        income_total += row["income"]
-        expense_total += row["expense"]
+        income_total += row["total_income"]
+        expense_total += row["total_expense"]
         balance_total += row["balance"]
         
     # Find how much cash the user currently has in the table "users"
@@ -180,20 +180,6 @@ def index():
         balance_total=balance_total,
         user_cash=user_cash
     )
-
-
-@app.route("/add_transactions", methods=["GET", "POST"])
-@login_required
-def buy():
-    """Buy shares of stock"""
-    return apology("TODO")
-
-
-@app.route("/history")
-@login_required
-def history():
-    """Show history of transactions"""
-    return apology("TODO")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -244,13 +230,6 @@ def logout():
 
     # Redirect user to login form
     return redirect("/")
-
-
-@app.route("/quote", methods=["GET", "POST"])
-@login_required
-def quote():
-    """Get stock quote."""
-    return apology("TODO")
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -323,10 +302,89 @@ def register():
         return render_template("register.html")
 
 
-@app.route("/sell", methods=["GET", "POST"])
+@app.route("/history")
 @login_required
-def sell():
-    """Sell shares of stock"""
+def history():
+    """Show history of transactions"""
+    # Get current user's id
+    user_id = session["user_id"]
+
+    # Get user's transactions
+    transactions_db = cur.execute(
+        "SELECT * FROM transactions WHERE user_id = :user_id", {'user_id': user_id}
+    )
+    transactions_db = transactions_db.fetchall()
+
+    # Add the key "balance" to each dictionary in the list of transactions
+    for row in transactions_db:
+        row["balance"] = row["income"] - row["expense"]
+
+    return render_template("history.html", transactions_db=transactions_db)
+
+
+@app.route("/add_transactions", methods=["GET", "POST"])
+@login_required
+def add_transactions():
+    """Add transactions"""
+    # User reached route via GET
+    if request.method == "GET":
+        return render_template("add_transactions.html")
+
+    # User reached route via POST
+    else:
+        # Get input data from the form
+        date = request.form.get("date")
+        account = request.form.get("account")
+        category = request.form.get("category")
+        description = request.form.get("description")
+        
+        income = request.form.get("income")
+        if not income:
+            income = 0
+        income = round(float(income), 2)
+        
+        expense = request.form.get("expense")
+        if not expense:
+            expense = 0
+        expense = round(float(expense), 2)
+        
+        # If the input is blank
+        if not account:
+            return apology("must provide account")
+
+        # If shares is not a positive integer
+        if income < 0 or expense < 0:
+            return apology("income and expense must be nonnegative")
+
+        # Get user's id of current user
+        user_id = session["user_id"]
+        
+        # # Get current date and time
+        # date = current_time()
+
+        # Insert new transaction into transaction history (in table "transactions")
+        with conn:
+            cur.execute(
+                """INSERT INTO transactions (user_id, date, account, category, description, income, expense) 
+                VALUES (:user_id, :date, :account, :category, :description, :income, :expense)""",
+                {'user_id': user_id,
+                'date': date,
+                'account': account,
+                'category': category,
+                'description': description,
+                'income': income,
+                'expense': expense}
+            )
+
+        # Redirect user to home page
+        flash("Transactions added!")
+        return redirect(url_for("index"))
+    
+
+@app.route("/edit_transactions", methods=["GET", "POST"])
+@login_required
+def edit_transactions():
+    """Edit transactions"""
     return apology("TODO")
 
 

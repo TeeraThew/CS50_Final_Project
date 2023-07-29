@@ -5,45 +5,42 @@
 {% endblock %}
 
 {% block main %}
+    <main class="container py-5 text-center">
 
-<main class="container py-5 text-center">
-
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th class="text-start">Account</th>
-                    <th class="text-end">Total Income</th>
-                    <th class="text-end">Total Expense</th>
-                    <th class="text-end">Balance</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                <!-- TODO: Loop through the database entries to display them in this table -->
-                {% for row in transactions_db %}
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td></td>
-                        <td class="text-start">{{ row["account"] }}</td>
-                        <td class="text-end">{{ row["income"] | usd }}</td>
-                        <td class="text-end">{{ row["expense"] | usd }}</td>
-                        <td class="text-end">{{ row["balance"] | usd }}</td>
+                        <th></th>
+                        <th class="text-start">Account</th>
+                        <th class="text-end">Total Income</th>
+                        <th class="text-end">Total Expense</th>
+                        <th class="text-end">Balance</th>
                     </tr>
-                {% endfor %}
-            </tbody>
+                </thead>
 
-            <tfoot>
-                <tr>
-                    <td class="border-0 fw-bold text-start" colspan="1">TOTAL</td>
-                    <td></td>
-                    <td class="border-0 w-bold text-end">{{ income_total | usd }}</td>
-                    <td class="border-0 w-bold text-end">{{ expense_total | usd }}</td>
-                    <td class="border-0 w-bold text-end">{{ balance_total | usd }}</td>
-                </tr>
-            </tfoot>
-        </table>
+                <tbody>
 
-</main>
+                    <!-- TODO: Loop through the database entries to display them in this table -->
+                    {% for row in transactions_db %}
+                        <tr>
+                            <td></td>
+                            <td class="text-start">{{ row["account"] }}</td>
+                            <td class="text-end">{{ row["total_income"] | usd }}</td>
+                            <td class="text-end">{{ row["total_expense"] | usd }}</td>
+                            <td class="text-end">{{ row["balance"] | usd }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
 
+                <tfoot>
+                    <tr>
+                        <td class="border-0 fw-bold text-start" colspan="1">TOTAL</td>
+                        <td></td>
+                        <td class="border-0 w-bold text-end">{{ income_total | usd }}</td>
+                        <td class="border-0 w-bold text-end">{{ expense_total | usd }}</td>
+                        <td class="border-0 w-bold text-end">{{ balance_total | usd }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+    </main>
 {% endblock %}

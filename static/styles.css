@@ -21,3 +21,12 @@ nav .navbar-brand .green
 {
     color: #2e944b;
 }
+
+/* Use this instead of the "text-break" class if you want to set minimum width and maximum width */
+/* #transaction-description
+{
+    word-break: break-word;
+    word-wrap: break-word; 
+    min-width: 150px; 
+    max-width: 300px;
+} */

@@ -45,7 +45,6 @@ Add transactions
     - description	    text
     - income			real
     - expense			real
-    - balance 			real
 
 Edit transactions
 
