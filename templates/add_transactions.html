@@ -16,27 +16,31 @@
         <form id="add_transactions" action="/add_transactions" method="post" onsubmit="return validateForm()">
             <div class="mb-3">
                 <label for="date">Date (MM/DD/YYYY)</label>
-                <input id="date" autocomplete="off" autofocus="" class="form-control w-auto center" name="date" placeholder="Date" type="date" required>
+                <input id="date" autocomplete="off" autofocus="" class="form-control w-auto center" name="date" placeholder="Date" type="date" value="{{ date }}" required>
             </div>
             <div class="form-floating mb-3">
-                <!-- Make this input an required input and set default value to "Cash" -->
-                <input id="account" autocomplete="off" class="form-control mx-auto w-auto" name="account" placeholder="Account" type="text" value="Cash" required>
+                {% if not account %}
+                    <!-- Make "account" input an required input and set default value to "Cash" -->
+                    <input id="account" autocomplete="off" class="form-control mx-auto w-auto" name="account" placeholder="Account" type="text" value="Cash" required>
+                {% else %}
+                    <input id="account" autocomplete="off" class="form-control mx-auto w-auto" name="account" placeholder="Account" type="text" value="{{ account }}" required>
+                {% endif %}
                 <label for="account">Account</label>
             </div>
             <div class="form-floating mb-3">
-                <input id="category" autocomplete="off" class="form-control mx-auto w-auto" name="category" placeholder="Category" type="text">
+                <input id="category" autocomplete="off" class="form-control mx-auto w-auto" name="category" placeholder="Category" type="text" value="{{ category }}">
                 <label for="category">Category</label>
             </div>
             <div class="form-floating mb-3">
-                <textarea autocomplete="off" class="form-control mx-auto w-auto" name="description" placeholder="Description" type="text"></textarea>
+                <textarea autocomplete="off" class="form-control mx-auto w-auto" name="description" placeholder="Description" type="text">{{ description }}</textarea>
                 <label for="description">Description</label>
             </div>
             <div class="form-floating mb-3">
-                <input autocomplete="off" class="form-control mx-auto w-auto" name="income" placeholder="Income (USD)" type="number" step="0.01" min="0">
+                <input autocomplete="off" class="form-control mx-auto w-auto" name="income" placeholder="Income (USD)" type="number" step="0.01" min="0" value="{{ income }}">
                 <label for="income">Income (USD)</label>
             </div>
             <div class="form-floating mb-3">
-                <input autocomplete="off" class="form-control mx-auto w-auto" name="expense" placeholder="Expense (USD)" type="number" step="0.01" min="0">
+                <input autocomplete="off" class="form-control mx-auto w-auto" name="expense" placeholder="Expense (USD)" type="number" step="0.01" min="0" value="{{ expense }}">
                 <label for="expense">Expense (USD)</label>
             </div>
             <button class="btn btn-primary" type="submit">Add transaction</button>

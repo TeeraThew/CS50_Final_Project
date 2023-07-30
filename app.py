@@ -145,7 +145,7 @@ def index():
     user_id = session["user_id"]
 
     if not user_id:
-        return render_template("index.html")
+        return render_template("login.html")
 
     # Get the balance of each account
     transactions_db = cur.execute(
@@ -236,65 +236,76 @@ def register():
     """Register user"""
     # If user reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
+        # Input validation
+        is_valid = True
+        
+        # Get user input
         username = request.form.get("username")
         password = request.form.get("password")
         confirmed_password = request.form.get("confirmation")
         
         # Ensure username was submitted
         if not username:
-            return apology("must provide username")
-
+            is_valid = False
+            flash("Must provide username")
+            
         # Ensure password was submitted
         if not password:
-            return apology("must provide password")
-
+            is_valid = False
+            flash("Must provide password")
         # Ensure password confirmation was submitted
-        if not confirmed_password:
-            return apology("must confirm password")
-
+        elif not confirmed_password:
+            is_valid = False
+            flash("Must confirm password")
         # Ensure password and confirmed password are matched
-        if password != confirmed_password:
-            return apology("password and confirmed password are not matched")
-
+        elif password != confirmed_password:
+            is_valid = False
+            flash("Password and confirmed password are not matched")
+            
         # Ensure password is valid
         if not validate_password(password):
-            return apology(
-                "password must have at least one digit and one special character"
+            is_valid = False
+            flash(
+                "Password must contain at least one digit and one special character"
             )
-
+            
         # Ensure the username does not exist in the database
         rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
-        # Here, no need to use "rows = rows.fetchall()""
+        rows = rows.fetchall()
         if rows:
-            return apology("username already exists")
-
+            is_valid = False
+            flash("Username already exists")
         # Another way:
         # usernames = cur.execute("SELECT username FROM users")
         # usernames = usernames.fetchall()
         # Check if the username already exists within the list "usernames" of dictionaries
         # if any(dict["username"] == username for dict in usernames):
         #   return apology("username already exists", 403)
+        else:
+            hash = generate_password_hash(request.form.get("password"))
+            # Insert user data into database
+            try:
+                with conn:
+                    new_user = cur.execute(
+                        "INSERT INTO users (username, hash) VALUES(:username, :hash)", {'username': username, 'hash': hash}
+                    )
+                    new_user = new_user.fetchall()
+            except:
+                is_valid = False
+                flash("Cannot insert user data")  
+            # Another way is to show an auto-generated error message: 
+            # except Exception as e:
+            #     return apology(str(e))
+        
+        if not is_valid:
+            return render_template("register.html", username=username)
+        else:
+            # Remember which user has logged in
+            session["user_id"] = new_user
 
-        hash = generate_password_hash(request.form.get("password"))
-        # Insert user data into database
-        try:
-            with conn:
-                new_user = cur.execute(
-                    "INSERT INTO users (username, hash) VALUES(:username, :hash)", {'username': username, 'hash': hash}
-                )
-                new_user = new_user.fetchall()
-        except:
-            return apology("cannot insert user data")  
-        # Another way is to show an auto-generated error message: 
-        # except Exception as e:
-        #     return apology(str(e))
-
-        # Remember which user has logged in
-        session["user_id"] = new_user
-
-        # Render home page
-        flash("You have registered!")
-        return redirect("/")
+            # Render home page
+            flash("You have registered!")
+            return redirect("/")
 
     # User reached route via GET (as by clicking a link or entering the URL or via redirect)
     else:
@@ -331,6 +342,9 @@ def add_transactions():
 
     # User reached route via POST
     else:
+        # Input validation
+        is_valid = True
+        
         # Get input data from the form
         date = request.form.get("date")
         account = request.form.get("account")
@@ -340,20 +354,33 @@ def add_transactions():
         income = request.form.get("income")
         if not income:
             income = 0
-        income = round(float(income), 2)
+        income = float(income)
         
         expense = request.form.get("expense")
         if not expense:
             expense = 0
-        expense = round(float(expense), 2)
+        expense = float(expense)
         
         # If the input is blank
         if not account:
-            return apology("must provide account")
+            is_valid = False
+            flash("Must provide account")
 
         # If shares is not a positive integer
-        if income < 0 or expense < 0:
-            return apology("income and expense must be nonnegative")
+        if income > 0 or expense < 0:
+            is_valid = False
+            flash("Income and expense must be nonnegative")
+            
+        if not is_valid:
+            return render_template(
+                "add_transactions.html", 
+                date=date,
+                account=account,
+                category=category,
+                description=description,
+                income=income, 
+                expense=expense
+                )
 
         # Get user's id of current user
         user_id = session["user_id"]
