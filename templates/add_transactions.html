@@ -13,26 +13,26 @@
 
 {% block main %}
     <main class="container py-5 text-center">
-        <form action="/add_transactions" method="post">
-            <div class="mb-3">
-                <label for="date">Date (MM/DD/YYYY)</label>
-                <input id="date" autocomplete="off" autofocus="" class="form-control mx-auto w-auto" name="date" placeholder="Date" type="date" required>
+        <form action="/add_transactions" method="post" class="form-horizontal">
+            <div class="mb-3 form-group">
+                <label for="date" class="form-label">Date (MM/DD/YYYY)</label>
+                <input id="date" autocomplete="off" autofocus="" class="form-control w-auto center" name="date" placeholder="Date" type="date" required>
             </div>
-            <div class="mb-3">
-                <label for="account">Account</label>
+            <div class="mb-3 form-group">
+                <label for="account" class="form-label">Account</label>
                 <!-- Make this input an required input and set default value to "Cash" -->
                 <input id="account" autocomplete="off" class="form-control mx-auto w-auto" name="account" placeholder="Account" type="text" value="Cash" required>
             </div>
-            <div class="mb-3">
+            <div class="mb-3 form-group">
                 <input autocomplete="off" class="form-control mx-auto w-auto" name="category" placeholder="Category" type="text">
             </div>
-            <div class="mb-3">
+            <div class="mb-3 form-group">
                 <input autocomplete="off" class="form-control mx-auto w-auto" name="description" placeholder="Description" type="text">
             </div>
-            <div class="mb-3">
+            <div class="mb-3 form-group">
                 <input autocomplete="off" class="form-control mx-auto w-auto" name="income" placeholder="Income (USD)" type="number">
             </div>
-            <div class="mb-3">
+            <div class="mb-3 form-group">
                 <input autocomplete="off" class="form-control mx-auto w-auto" name="expense" placeholder="Expense (USD)" type="number">
             </div>
             <button class="btn btn-primary" type="submit">Add transaction</button>
