@@ -84,3 +84,7 @@ nav .navbar-brand .green {
 .center {
     margin: auto;
 }
+
+.center-form{
+    justify-content: center;
+}

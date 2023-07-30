@@ -19,6 +19,42 @@ document.addEventListener('DOMContentLoaded', function() {
             padTo2Digits(date.getDate()),
         ].join('-');
     }
+
+
+    // Validate user input for adding transactions
+    let form = document.querySelector('add_transactions');
+    form.addEventListener('submit', function validateForm() {
+        // Get input data from the form
+        const date = document.querySelector('date');
+        const account = document.querySelector('account');
+        const category = document.querySelector('category');
+        const description = document.querySelector('description');
+        const income = document.querySelector('income');
+        const expense = document.querySelector('expense');
+
+        return false;
+
+        // If both income and expense inputs are empty
+        if (income == "" || expense == "")
+        {
+            alert("Please specify income and/or expense");
+            // e.preventDefault();
+            return false;
+        }
+        
+        if (account == "")
+        {
+            alert("Please specify account");
+            return false;
+        }
+
+        if (income < 0 || expense < 0)
+        {
+            alert("income and expense must be nonnegative");
+            return false;
+        }
+
+    });
 });
 
 
