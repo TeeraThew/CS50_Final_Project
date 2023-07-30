@@ -1,4 +1,4 @@
-
+# Main source code of the web pplication
 
 import os
 
@@ -149,10 +149,13 @@ def index():
         return render_template("login.html")
 
     # Get the balance of each account
-    transactions_db = cur.execute(
-        "SELECT account, SUM(income) AS total_income, SUM(expense) AS total_expense  FROM transactions WHERE user_id = :user_id GROUP BY account", {'user_id': user_id}
-    )
-    transactions_db = transactions_db.fetchall()
+    try:
+        transactions_db = cur.execute(
+            "SELECT account, SUM(income) AS total_income, SUM(expense) AS total_expense  FROM transactions WHERE user_id = :user_id GROUP BY account", {'user_id': user_id}
+        )
+        transactions_db = transactions_db.fetchall()
+    except:
+        return "Database error occurred"
 
     # Add the key "balance" to each dictionary in the list of transactions
     for row in transactions_db:
@@ -168,10 +171,13 @@ def index():
         balance_total += row["balance"]
         
     # Find how much cash the user currently has in the table "users"
-    user_cash_db = cur.execute("SELECT cash FROM users WHERE id = :user_id", {'user_id': user_id})
-    user_cash_db = user_cash_db.fetchall()
-    user_cash = user_cash_db[0]["cash"]
-
+    try:
+        user_cash_db = cur.execute("SELECT cash FROM users WHERE id = :user_id", {'user_id': user_id})
+        user_cash_db = user_cash_db.fetchall()
+        user_cash = user_cash_db[0]["cash"]
+    except:
+        return "Database error occurred"
+    
     # Render homepage
     return render_template(
         "index.html",
@@ -201,6 +207,10 @@ def login():
         password = request.form.get("password")
         
         # You can also prevent empty user input on the client-side by adding the "required" attribute to the <input> tag
+        # In general, it is best to perform input validation on both the client side and server side. 
+        # Client-side input validation can help reduce server load and can prevent malicious users from submitting invalid data. 
+        # However, client-side input validation is not a substitute for server-side input validation. Server-side input validation is essential to ensure that only valid data is processed by the application. 
+        
         # Ensure username was submitted (This is a server-side validation)
         if not username:
             is_valid = False
@@ -215,8 +225,11 @@ def login():
             return render_template("login.html")
 
         # Query database for username
-        rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
-        rows = rows.fetchall()
+        try:
+            rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
+            rows = rows.fetchall()
+        except:
+            return "Database error occurred"
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], password):
@@ -284,8 +297,12 @@ def register():
             )
             
         # Ensure the username does not exist in the database
-        rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
-        rows = rows.fetchall()
+        try:
+            rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
+            rows = rows.fetchall()
+        except:
+            return "Database error occurred"
+    
         if rows:
             is_valid = False
             flash("Username already exists")
@@ -335,10 +352,13 @@ def history():
     user_id = session["user_id"]
 
     # Get user's transactions
-    transactions_db = cur.execute(
-        "SELECT * FROM transactions WHERE user_id = :user_id", {'user_id': user_id}
-    )
-    transactions_db = transactions_db.fetchall()
+    try:
+        transactions_db = cur.execute(
+            "SELECT * FROM transactions WHERE user_id = :user_id", {'user_id': user_id}
+        )
+        transactions_db = transactions_db.fetchall()
+    except:
+        return "Database error occurred"
 
     # Add the key "balance" to each dictionary in the list of transactions
     for row in transactions_db:
@@ -382,9 +402,14 @@ def add_transactions():
             flash("Must provide account")
 
         # If shares is not a positive integer
-        if income > 0 or expense < 0:
+        if income < 0 or expense < 0:
             is_valid = False
             flash("Income and expense must be nonnegative")
+            
+        # If both income and expense are 0
+        if income == 0 and expense == 0:
+            is_valid = False
+            flash("Either income or expense must be positive")
             
         if not is_valid:
             return render_template(
@@ -404,18 +429,21 @@ def add_transactions():
         # date = current_time()
 
         # Insert new transaction into transaction history (in table "transactions")
-        with conn:
-            cur.execute(
-                """INSERT INTO transactions (user_id, date, account, category, description, income, expense) 
-                VALUES (:user_id, :date, :account, :category, :description, :income, :expense)""",
-                {'user_id': user_id,
-                'date': date,
-                'account': account,
-                'category': category,
-                'description': description,
-                'income': income,
-                'expense': expense}
-            )
+        try:
+            with conn:
+                cur.execute(
+                    """INSERT INTO transactions (user_id, date, account, category, description, income, expense) 
+                    VALUES (:user_id, :date, :account, :category, :description, :income, :expense)""",
+                    {'user_id': user_id,
+                    'date': date,
+                    'account': account,
+                    'category': category,
+                    'description': description,
+                    'income': income,
+                    'expense': expense}
+                )
+        except:
+            return "Database error occurred"
 
         # Redirect user to home page
         flash("Transactions added!")

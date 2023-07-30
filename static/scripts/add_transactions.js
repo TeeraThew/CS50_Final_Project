@@ -3,8 +3,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const dateInput = document.getElementById('date');
 
-    // Using the user's timezone
-    dateInput.value = formatDate();
+    // If date input is empty
+    if (!dateInput.value)
+    {
+        // Set default date to today using the user's timezone
+        dateInput.value = formatDate();
+    }
 
     // Convert date and month input to have 2 digits
     function padTo2Digits(num) {
