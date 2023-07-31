@@ -34,15 +34,15 @@
                         <td class="text-end">{{ row["expense"] | usd }}</td>
                         <td class="text-end">{{ row["balance"] | usd }}</td>
                         <td>
-                            <form action="/editing_transaction" method="post">
-                                <input type=hidden value="{{ row["id"] }}">
-                                <button class="btn btn-warning" type="submit" name="transaction_to_edit" value="{{ row["id"] }}">Edit</button>
+                            <form action="{{ url_for("editing_transaction", transaction_row=row) }}" method="post">
+                                <input type=hidden value="{{ row }}">
+                                <button class="btn btn-warning" type="submit" name="transaction_to_edit" value="{{ row }}">Edit</button>
                             </form>
                         </td>   
                         <td>
                             <form action="/delete_transaction" method="post">
-                                <input type=hidden value="{{ row["id"] }}">
-                                <button class="btn btn-danger" type="submit" name="transaction_to_delete" value="{{ row["id"] }}">Delete</button>
+                                <input type=hidden value="{{ row }}">
+                                <button class="btn btn-danger" type="submit" name="transaction_to_delete" value="{{ row }}">Delete</button>
                             </form>
                         </td>
                     </tr>

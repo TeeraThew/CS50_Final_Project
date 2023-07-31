@@ -26,6 +26,8 @@ from helpers import (
     validate_password
 )
 
+import ast
+
 
 # Create an instance of the "Flask" class and pass the Flask constructor the path of the correct module 
 #   so that Flask knows where to look for resources such as templates and static files.
@@ -455,8 +457,16 @@ def add_transactions():
 def editing_transaction():
     """Editing transaction"""
     if request.method == "POST":
-        transaction_id = request.form.get("transaction_to_edit")
-        return render_template(url_for("editing_transactions", transaction_id=transaction_id))
+        # Get the transaction row as a string (i.e. it is the string representation of the dictionary)
+        # So we need to convert the string to the original dictionary first.
+        transaction_row = request.form.get("transaction_to_edit")
+        # Convert the string representation to the dictionary
+        transaction_row = ast.literal_eval(transaction_row)
+        
+        # print(f"transaction_row = {transaction_row}")
+        # print(f"transaction_row[0] = {transaction_row[0]}")
+        # print("income = " + income)
+        return render_template("editing_transaction.html", transaction_row=transaction_row)
     else:
         return apology("An error occurred", 500)
         
@@ -491,8 +501,8 @@ def edit_transactions():
         # Get user's id of current user
         user_id = session["user_id"]
         
-        # Get the id of the transaction that is to be edited
-        transaction_id = request.form.get("edit_transaction") 
+        # # Get the id of the transaction that is to be edited
+        # transaction_id = request.form.get("edit_transaction") 
 
         # Input validation
         is_valid = True
@@ -519,7 +529,7 @@ def edit_transactions():
             flash("Must provide account")
 
         # If shares is not a positive integer
-        if income < 0 or expense < 0:
+        if income > 0 or expense < 0:
             is_valid = False
             flash("Income and expense must be nonnegative")
             
@@ -530,7 +540,7 @@ def edit_transactions():
             
         if not is_valid:
             return render_template(
-                "edit_transactions.html", 
+                "editing_transaction.html", 
                 date=date,
                 account=account,
                 category=category,
