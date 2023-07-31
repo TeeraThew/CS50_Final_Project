@@ -1,41 +1,20 @@
-# Main source code of the web pplication
-
-import os
+# Main source code of the web application
 
 # Import the "sqlite3" module
 import sqlite3
 
-from sqlalchemy import create_engine, Table, MetaData, text, Integer, String, Sequence
-
-from sqlalchemy.ext.automap import automap_base
-
-
-# Flask-SQLAlchemy is an extension for Flask that adds support for SQLAlchemy to your application.
-from flask_sqlalchemy import SQLAlchemy
-
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_session import Session
-from tempfile import mkdtemp
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from helpers import (
     apology,
     login_required,
     usd,
-    current_time,
     validate_password
 )
 
 import ast
-
-# # Global constants
-# MAX = {
-#     'ACCOUNT_LENGTH': 20,
-#     'CATEGORY_LENGTH': 20,
-#     'DESCRIPTON-LENGTH': 100,
-#     'MONEY': 10**2
-# }
-
 
 # Create an instance of the "Flask" class and pass the Flask constructor the path of the correct module 
 #   so that Flask knows where to look for resources such as templates and static files.
@@ -48,47 +27,15 @@ app.jinja_env.filters["usd"] = usd
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-# app.config["SECRET_KEY"] = "x!\x8d\x8d\x974\xae\xa2\xc6\x05\x89\x00"   
-# configure the SQLite database, relative to the app instance folder
-
-# db = SQLAlchemy(app)
-
-
-# users = db.Table('users', db.metadata, autoload=True, autoload_with=db.engine)
-
-# Base = automap_base()
-# Base.prepare(db.engine, reflect=True)
-# users = Base.classes.users
-
 Session(app)
-
-
-# # create the extension
-# db = SQLAlchemy()
-
-# # initialize the app with the extension
-# db.init_app(app)
 
 # The name of the database file (.db file)
 db_name = "database.db"
 
-
-# db = create_engine('sqlite:///dogscats.db')
-# metadata = MetaData(bind=db)
-# users = Table('users', metadata, autoload=True)
-# cases = Table('cases', metadata, autoload=True)
-
-# # Create a connection to the database "database_name.db" in the current working directory, 
-# # implicitly creating it if it does not exist.
-# # The returned Connection object con represents the connection to the on-disk database.
-# conn = sqlite3.connect('database.db', connect_args={"check_same_thread": False})
-
-# conn = create_engine(
-# 'sqlite:///database.db',
-# connect_args={'check_same_thread': False}
-# )
-
+# Create a connection to the database "database_name.db" in the current working directory, implicitly creating it if it does not exist.
+# The returned Connection object conn represents the connection to the on-disk database.
+# If check_same_thread = True (default), ProgrammingError will be raised if the database connection is used by a thread other than the one that created it. 
+# If check_same_thread = False, the connection may be accessed in multiple threads; write operations may need to be serialized by the user to avoid data corruption.
 conn = sqlite3.connect('database.db', check_same_thread=False)
 
 # # Alternatively, we can create an SQLite database existing only in memory (RAM), and open a connection to it,
@@ -113,27 +60,28 @@ cur = conn.cursor()
 # Used only when we want to create a table for the first time
 # Use the "IF NOT EXISTS" clause to avoid an error when a table with the same name already exists
 cur.execute("""CREATE TABLE IF NOT EXISTS users (
-id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-username TEXT NOT NULL, 
-hash TEXT NOT NULL, 
-cash NUMERIC NOT NULL DEFAULT 0.00
-)""")
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+    username TEXT NOT NULL, 
+    hash TEXT NOT NULL
+    )"""
+)
 
 # Creates an index named "username" on the "username" column in the "users" table
 cur.execute("CREATE UNIQUE INDEX IF NOT EXISTS username ON users (username)")
 
 # Create a table named "transactions"
 cur.execute("""CREATE TABLE IF NOT EXISTS transactions (
-id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-user_id INTEGER,
-date DATE,
-account TEXT,
-category TEXT,
-description TEXT,
-income	REAL NOT NULL DEFAULT 0.00,
-expense	REAL NOT NULL DEFAULT 0.00,
-FOREIGN KEY(user_id) REFERENCES users(id)
-)""")
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+    user_id INTEGER,
+    date DATE,
+    account TEXT,
+    category TEXT,
+    description TEXT,
+    income	REAL NOT NULL DEFAULT 0.00,
+    expense	REAL NOT NULL DEFAULT 0.00,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+    )"""
+)
     
     
 # Ensure responses after each request aren't cached
@@ -160,7 +108,11 @@ def index():
     # Get the balance of each account
     try:
         transactions_db = cur.execute(
-            "SELECT account, SUM(income) AS total_income, SUM(expense) AS total_expense  FROM transactions WHERE user_id = :user_id GROUP BY account", {'user_id': user_id}
+            """SELECT account, SUM(income) AS total_income, SUM(expense) AS total_expense  
+                FROM transactions 
+                WHERE user_id = :user_id 
+                GROUP BY account""", 
+            {'user_id': user_id}
         )
         transactions_db = transactions_db.fetchall()
     except:
@@ -178,14 +130,6 @@ def index():
         income_total += row["total_income"]
         expense_total += row["total_expense"]
         balance_total += row["balance"]
-        
-    # Find how much cash the user currently has in the table "users"
-    try:
-        user_cash_db = cur.execute("SELECT cash FROM users WHERE id = :user_id", {'user_id': user_id})
-        user_cash_db = user_cash_db.fetchall()
-        user_cash = user_cash_db[0]["cash"]
-    except:
-        return apology("Database error occurred", 500)
     
     # Render homepage
     return render_template(
@@ -194,7 +138,6 @@ def index():
         income_total=income_total,
         expense_total=expense_total,
         balance_total=balance_total,
-        user_cash=user_cash
     )
 
 
@@ -301,9 +244,7 @@ def register():
         # Ensure password is valid
         if not validate_password(password):
             is_valid = False
-            flash(
-                "Password must contain at least one digit and one special character"
-            )
+            flash("Password must contain at least one digit and one special character")
             
         # Ensure the username does not exist in the database
         try:
@@ -322,7 +263,9 @@ def register():
         # if any(dict["username"] == username for dict in usernames):
         #   return apology("username already exists", 403)
         
+        # Generate password hash
         hash = generate_password_hash(request.form.get("password"))
+        
         # Insert user data into database
         try:
             with conn:
@@ -436,9 +379,6 @@ def add_transactions():
         # Get user's id of current user
         user_id = session["user_id"]
         
-        # # Get current date and time
-        # date = current_time()
-
         # Insert new transaction into transaction history (in table "transactions")
         try:
             with conn:

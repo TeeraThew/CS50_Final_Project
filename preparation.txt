@@ -25,7 +25,6 @@ users
     - id		int, primary key
     - username 	text, not null
     - hash	    text, not null
-    - cash 	    numeric, not null, default 0.00
     
 transactions
     - id				int, primary key

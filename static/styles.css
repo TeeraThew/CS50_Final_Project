@@ -1,13 +1,13 @@
 /* CSS is a style sheet language used for describing the presentation of 
     a document written in a markup language such as HTML or XML. */
 
-/* Set font size for everything in <body> tag */
+/* Set font size and background color for everything in <body> tag */
 body {
     font-size: 100%;
     background-color: #fffee0;
 }
 
-/* Set font sizes*/
+/* Large font size */
 .text-large {
     font-size: large
 }
@@ -38,19 +38,26 @@ nav .navbar-brand .green {
     color: #2e944b;
 }
 
-/* Use this instead of the "text-break" class if you want to set minimum width and maximum width */
-/* #transaction-description
-{
-    word-break: break-word;
-    word-wrap: break-word; 
-    min-width: 150px; 
-    max-width: 300px;
-} */
-
 /* Logo in the navigation bar */
 #navbar-logo {
     width: 50px;
 }
+
+.navbar-toggler-icon {
+    /* position: absolute;
+    display: none; 
+    flex-direction: column;
+    justify-content: space-between; */
+    background-color: yellow;
+}
+
+/* .bar {
+    display: block;
+    height: 3px;
+    width: 100%;
+    background-color: red;
+    border-radius: 10px;
+} */
 
 /* Text colors */
 .text-blue {
@@ -77,13 +84,6 @@ nav .navbar-brand .green {
 .text-orange {
     color: rgb(255, 102, 0);
 }
-
-/* Labels in form group
-.form-group label {
-    float: left;
-    padding-right: 5px;
-    justify-content: center;
-} */
 
 .center {
     margin: auto;
