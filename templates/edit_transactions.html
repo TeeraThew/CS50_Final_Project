@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Edit Transactions
+{% endblock %}
+
+{% block main %}
+    <main class="container py-5 text-center">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="text-start">Date</th>
+                    <th class="text-start">Account</th>
+                    <th class="text-start">Category</th>
+                    <th class="text-start">Description</th>
+                    <th class="text-end">Income</th>
+                    <th class="text-end">Expense</th>
+                    <th class="text-end">Balance</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Loop through the database entries to display them in this table -->
+                {% for row in transactions_db %}
+                    <tr>
+                        <td class="text-start">{{ row["date"] }}</td>
+                        <td class="text-start">{{ row["account"] }}</td>
+                        <td class="text-start">{{ row["category"] }}</td>
+                        <!-- Prevent long strings of text from breaking your components’ layout by using 
+                            .text-break to set word-wrap: break-word and word-break: break-word.  -->
+                        <td id="transaction-description" class="text-start text-break">{{ row["description"] }}</td>
+                        <td class="text-end">{{ row["income"] | usd }}</td>
+                        <td class="text-end">{{ row["expense"] | usd }}</td>
+                        <td class="text-end">{{ row["balance"] | usd }}</td>
+                        <td>
+                            <form action="/editing_transaction" method="post">
+                                <input type=hidden value="{{ row["id"] }}">
+                                <button class="btn btn-warning" type="submit" name="transaction_to_edit" value="{{ row["id"] }}">Edit</button>
+                            </form>
+                        </td>   
+                        <td>
+                            <form action="/delete_transaction" method="post">
+                                <input type=hidden value="{{ row["id"] }}">
+                                <button class="btn btn-danger" type="submit" name="transaction_to_delete" value="{{ row["id"] }}">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+{% endblock %}
+
+
+

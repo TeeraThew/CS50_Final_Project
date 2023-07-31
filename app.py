@@ -155,7 +155,7 @@ def index():
         )
         transactions_db = transactions_db.fetchall()
     except:
-        return "Database error occurred"
+        apology("Database error occurred", 500)
 
     # Add the key "balance" to each dictionary in the list of transactions
     for row in transactions_db:
@@ -176,7 +176,7 @@ def index():
         user_cash_db = user_cash_db.fetchall()
         user_cash = user_cash_db[0]["cash"]
     except:
-        return "Database error occurred"
+        return apology("Database error occurred", 500)
     
     # Render homepage
     return render_template(
@@ -229,7 +229,7 @@ def login():
             rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
             rows = rows.fetchall()
         except:
-            return "Database error occurred"
+            return apology("Database error occurred", 500)
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], password):
@@ -301,7 +301,7 @@ def register():
             rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
             rows = rows.fetchall()
         except:
-            return "Database error occurred"
+            return apology("Database error occurred", 500)
     
         if rows:
             is_valid = False
@@ -358,7 +358,7 @@ def history():
         )
         transactions_db = transactions_db.fetchall()
     except:
-        return "Database error occurred"
+        return apology("Database error occurred", 500)
 
     # Add the key "balance" to each dictionary in the list of transactions
     for row in transactions_db:
@@ -443,18 +443,134 @@ def add_transactions():
                     'expense': expense}
                 )
         except:
-            return "Database error occurred"
+            return apology("Database error occurred", 500)
 
         # Redirect user to home page
         flash("Transactions added!")
         return redirect(url_for("index"))
     
 
+@app.route("/editing_transaction", methods=["POST"])
+@login_required
+def editing_transaction():
+    """Editing transaction"""
+    if request.method == "POST":
+        transaction_id = request.form.get("transaction_to_edit")
+        return render_template(url_for("editing_transactions", transaction_id=transaction_id))
+    else:
+        return apology("An error occurred", 500)
+        
+
+
 @app.route("/edit_transactions", methods=["GET", "POST"])
 @login_required
 def edit_transactions():
     """Edit transactions"""
-    return apology("TODO")
+    
+    # User reached route via GET
+    if request.method == "GET":
+        # Get current user's id
+        user_id = session["user_id"]
+
+        # Get user's transactions
+        try:
+            transactions_db = cur.execute(
+                "SELECT * FROM transactions WHERE user_id = :user_id", {'user_id': user_id}
+            )
+            transactions_db = transactions_db.fetchall()
+        except:
+            return apology("Database error occurred", 500)
+
+        # Add the key "balance" to each dictionary in the list of transactions
+        for row in transactions_db:
+            row["balance"] = row["income"] - row["expense"]
+
+        return render_template("edit_transactions.html", transactions_db=transactions_db)
+    
+    elif request.method == "POST":
+        # Get user's id of current user
+        user_id = session["user_id"]
+        
+        # Get the id of the transaction that is to be edited
+        transaction_id = request.form.get("edit_transaction") 
+
+        # Input validation
+        is_valid = True
+        
+        # Get input data from the form
+        date = request.form.get("date")
+        account = request.form.get("account")
+        category = request.form.get("category")
+        description = request.form.get("description")
+        
+        income = request.form.get("income")
+        if not income:
+            income = 0
+        income = float(income)
+        
+        expense = request.form.get("expense")
+        if not expense:
+            expense = 0
+        expense = float(expense)
+        
+        # If the input is blank
+        if not account:
+            is_valid = False
+            flash("Must provide account")
+
+        # If shares is not a positive integer
+        if income < 0 or expense < 0:
+            is_valid = False
+            flash("Income and expense must be nonnegative")
+            
+        # If both income and expense are 0
+        if income == 0 and expense == 0:
+            is_valid = False
+            flash("Either income or expense must be positive")
+            
+        if not is_valid:
+            return render_template(
+                "edit_transactions.html", 
+                date=date,
+                account=account,
+                category=category,
+                description=description,
+                income=income, 
+                expense=expense
+                )
+
+        # Update the transaction (in table "transactions")
+        try:
+            with conn:
+                cur.execute(
+                    """UPDATE transactions 
+                        SET date = :date, 
+                            account = :account, 
+                            category = :category, 
+                            description = :description, 
+                            income = :income, 
+                            expense = :expense
+                        WHERE user_id = :user_id 
+                        AND id = :transaction_id
+                    """,
+                    {'user_id': user_id,
+                    'transaction_id': transaction_id,
+                    'date': date,
+                    'account': account,
+                    'category': category,
+                    'description': description,
+                    'income': income,
+                    'expense': expense
+                    }) 
+        except:
+            return apology("Database error occurred", 500)
+        
+        # Redirect user to history page
+        flash("Transactions edited!")
+        return render_template("edit_transactions.html")
+        
+    else:
+        return apology("An error occurred", 500)
 
 
 if __name__ == "__main__":
