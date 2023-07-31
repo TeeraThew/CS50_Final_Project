@@ -28,6 +28,14 @@ from helpers import (
 
 import ast
 
+# # Global constants
+# MAX = {
+#     'ACCOUNT_LENGTH': 20,
+#     'CATEGORY_LENGTH': 20,
+#     'DESCRIPTON-LENGTH': 100,
+#     'MONEY': 10**2
+# }
+
 
 # Create an instance of the "Flask" class and pass the Flask constructor the path of the correct module 
 #   so that Flask knows where to look for resources such as templates and static files.
@@ -82,7 +90,6 @@ db_name = "database.db"
 # )
 
 conn = sqlite3.connect('database.db', check_same_thread=False)
-
 
 # # Alternatively, we can create an SQLite database existing only in memory (RAM), and open a connection to it,
 # # Note that, in this case, the database will only exist temporarily and will be refreshed every time you run the program
@@ -356,7 +363,9 @@ def history():
     # Get user's transactions
     try:
         transactions_db = cur.execute(
-            "SELECT * FROM transactions WHERE user_id = :user_id", {'user_id': user_id}
+            """SELECT * FROM transactions WHERE user_id = :user_id 
+            ORDER BY date DESC, id DESC""", 
+            {'user_id': user_id}
         )
         transactions_db = transactions_db.fetchall()
     except:
@@ -412,10 +421,10 @@ def add_transactions():
         if income == 0 and expense == 0:
             is_valid = False
             flash("Either income or expense must be positive")
-            
+        
         if not is_valid:
             return render_template(
-                "add_transactions.html", 
+                "add_transactions.html",
                 date=date,
                 account=account,
                 category=category,
@@ -466,7 +475,16 @@ def editing_transaction():
         # print(f"transaction_row = {transaction_row}")
         # print(f"transaction_row[0] = {transaction_row[0]}")
         # print("income = " + income)
-        return render_template("editing_transaction.html", transaction_row=transaction_row)
+        return render_template(
+            "editing_transaction.html", 
+            transaction_id=transaction_row['id'],
+            date=transaction_row['date'],
+            account=transaction_row['account'],
+            category=transaction_row['category'],
+            description=transaction_row['description'],
+            income=transaction_row['income'],
+            expense=transaction_row['expense']
+            )
     else:
         return apology("An error occurred", 500)
         
@@ -485,7 +503,9 @@ def edit_transactions():
         # Get user's transactions
         try:
             transactions_db = cur.execute(
-                "SELECT * FROM transactions WHERE user_id = :user_id", {'user_id': user_id}
+                """SELECT * FROM transactions WHERE user_id = :user_id
+                ORDER BY date DESC, id DESC""", 
+                {'user_id': user_id}
             )
             transactions_db = transactions_db.fetchall()
         except:
@@ -501,8 +521,8 @@ def edit_transactions():
         # Get user's id of current user
         user_id = session["user_id"]
         
-        # # Get the id of the transaction that is to be edited
-        # transaction_id = request.form.get("edit_transaction") 
+        # Get the id of the transaction that is to be edited
+        transaction_id = request.form.get("transaction_to_edit_id") 
 
         # Input validation
         is_valid = True
@@ -529,7 +549,7 @@ def edit_transactions():
             flash("Must provide account")
 
         # If shares is not a positive integer
-        if income > 0 or expense < 0:
+        if income < 0 or expense < 0:
             is_valid = False
             flash("Income and expense must be nonnegative")
             
@@ -575,13 +595,45 @@ def edit_transactions():
         except:
             return apology("Database error occurred", 500)
         
-        # Redirect user to history page
+        # Redirect user to edit_transactions page
         flash("Transactions edited!")
-        return render_template("edit_transactions.html")
+        return redirect(url_for("edit_transactions"))
         
     else:
         return apology("An error occurred", 500)
 
+
+@app.route("/delete_transaction", methods=["POST"])
+@login_required
+def delete_transaction():
+    """Delete transaction"""
+    if request.method == "POST":
+        # Get user's id of current user
+        user_id = session["user_id"]
+        
+        # Get the id of the transaction that is to be deleted
+        transaction_id = request.form.get("transaction_to_delete_id") 
+
+        # Delete the transaction (in table "transactions")
+        try:
+            with conn:
+                cur.execute(
+                    """DELETE FROM transactions 
+                        WHERE user_id = :user_id 
+                        AND id = :transaction_id
+                    """,
+                    {'user_id': user_id,
+                    'transaction_id': transaction_id
+                    }) 
+        except:
+            return apology("Database error occurred", 500)
+        
+        # Redirect user to edit_transactions page
+        flash("Transactions deleted!")
+        return redirect(url_for("edit_transactions"))
+        
+    else:
+        return apology("An error occurred", 500)
 
 if __name__ == "__main__":
     #  Run the flask application with debug mode as "ON"

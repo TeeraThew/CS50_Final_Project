@@ -1,3 +1,6 @@
+/* CSS is a style sheet language used for describing the presentation of 
+    a document written in a markup language such as HTML or XML. */
+
 /* Set font size for everything in <body> tag */
 body {
     font-size: 100%;
@@ -87,4 +90,9 @@ nav .navbar-brand .green {
 
 .center-form{
     justify-content: center;
+}
+
+td {
+    word-wrap: break-word;
+    vertical-align: middle;
 }
