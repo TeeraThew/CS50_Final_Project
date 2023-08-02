@@ -33,12 +33,12 @@
                         <td class="text-end">{{ row["income"] | usd }}</td>
                         <td class="text-end">{{ row["expense"] | usd }}</td>
                         <td class="text-end">{{ row["balance"] | usd }}</td>
-                        <td>
+                        <td class="small-entry">
                             <form action="/editing_transaction" method="post">
                                 <button class="btn btn-warning" type="submit" name="transaction_to_edit" value="{{ row }}">Edit</button>
                             </form>
                         </td>   
-                        <td>
+                        <td class="small-entry">
                             <form action="/delete_transaction" method="post" onsubmit="return confirm('Are you sure you want to delete this transaction?')">
                                 <button class="btn btn-danger" type="submit" name="transaction_to_delete_id" value="{{ row['id'] }}">Delete</button>
                             </form>

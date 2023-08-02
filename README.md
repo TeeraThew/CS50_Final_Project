@@ -37,8 +37,41 @@
   3. CREATE TABLE sqlite_sequence(name,seq);
 - The table "sqlite_sequence" is automatically created to store information about autoincrement column.
 
+## How to use
 
-## Storing transactions.
+### 1. Registration
+- To use this web app, you first need to create your own account.
+- To register, click the "Register" link in the navigation bar at the top of the page.
+- Fill in your username, password and password confirmation. 
+- The password must contain at least one digit (0-9) and one special character (#, ?, !, @, $, %, ^, &, *, -, _)
+- Then click the "register" link.
+- If your registration is successful, you will be redirected to the index page (or home page) with a flash message saying that your registration is complete.  
+    
+### 2. Log in and log out
+- To log in, fill in your username and password, and then click the "Log In" button.
+- After you have logged in, your username will appear in the top navigation bar
+- To log out, click the "Log Out" link in the top navigation bar.
+
+### 3. Home page
+- To go to your home page, click the "Home" link in the top navigation bar.
+- Your home page contains a summary table that shows your total income, total expense, and balance for each of your account. 
+
+### 4. Add transactions
+- To add a transaction, click the "Add transactions" link in the top navigation bar.
+- The form consists of date, account, category, description, income (USD), and expense (USD) 
+- Date, account, and either income or expense are required. The other fields are optional. 
+- After filling in the form, click the "Add transaction" button.
+- If the transaction has been successfully added, you will be redirected to your home page with a flash message.
+
+### 5. Edit transactions
+- To edit a transaction, click the "Edit transactions" link in the top navigation bar.
+- Choose the transaction you want to edit.
+- If you want to edit the information of the transaction, click the "Edit" button in the that transaction's row. Then change the information and click the "Edit transaction" button.
+- If you want to delete the transaction, click the "Delete" button in the that transaction's row.
+A confirmation popup box will appear. Click the "OK" button to confirm that you want to delete that transaction.
+### 5. History
+- To see your transaction history, click the "History" link in the top navigation bar.
+- The history page will show all of your past transaction information.
 
 ## Pictures
 

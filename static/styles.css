@@ -99,3 +99,7 @@ td {
     vertical-align: middle;
 }
 
+/* Set the width of the columns that contain the "Edit" and "Delete" buttons */
+.small-entry {
+    width: 80px;
+}
