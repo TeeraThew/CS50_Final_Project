@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block main %}
-    <main class="container py-5 d-flex justify-content-center">
+    <div class="py-5 d-flex justify-content-center">
         <form action="/login" method="post">
             <div class="form-floating mb-3">
                 <input id="username" autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Username" type="text" required>
@@ -17,5 +17,5 @@
             </div>
             <button class="btn btn-primary" type="submit">Log In</button>
         </form>
-    </main>
+    </div>
 {% endblock %}

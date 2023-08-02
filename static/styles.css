@@ -5,6 +5,7 @@
 body {
     font-size: 100%;
     background-color: #fffee0;
+    padding-top: 60px;
 }
 
 /* Large font size */
@@ -16,7 +17,12 @@ body {
 .nav-link:hover {
     background-color: #f5b82e;
     font-weight: bold;
-    color: black;
+    color: black !important;
+}
+
+/* Use "!important" rule to override ALL previous styling rules for a specific property on an element */
+.nav-link, .nav-item, .nav-text {
+    padding: 10px !important;
 }
 
 /* Size for brand */
@@ -43,50 +49,45 @@ nav .navbar-brand .green {
     width: 50px;
 }
 
-.navbar-toggler-icon {
-    /* position: absolute;
-    display: none; 
-    flex-direction: column;
-    justify-content: space-between; */
-    background-color: yellow;
-}
-
-/* .bar {
-    display: block;
-    height: 3px;
-    width: 100%;
-    background-color: red;
-    border-radius: 10px;
-} */
-
 /* Text colors */
+/* Use "!important" rule to override ALL previous styling rules for a specific property on an element */
+/* We need "!important" here to override the text color setting from the bootstrap's class .navbar-dark */
 .text-blue {
-    color: #537fbe;
+    color: #537fbe !important; 
 }
 .text-red {
-    color: #ea433b;
+    color: #ea433b !important;
 }
 .text-yellow {
-    color: #f5b82e;
+    color: #f5b82e !important;
 }
 .text-green {
-    color: #2e944b;
+    color: #2e944b !important;
 }
 .text-brightblue{
-    color: #00eeff;
+    color: #00eeff !important;
 }
 .text-pink{
-    color: #fd9af0;
+    color: #fd9af0 !important;
 }
 .text-brightgreen {
-    color: #AAFF00;
+    color: #AAFF00 !important;
 }
 .text-orange {
-    color: rgb(255, 102, 0);
+    color: #ff6600 !important;
+}
+.text-brightyellow {
+    color: #fff700 !important;
 }
 
 .center {
     margin: auto;
+}
+
+.nav-text{
+    margin-top: auto;
+    margin-bottom: auto;
+    pointer-events: none;
 }
 
 .center-form{
@@ -97,3 +98,4 @@ td {
     word-wrap: break-word;
     vertical-align: middle;
 }
+

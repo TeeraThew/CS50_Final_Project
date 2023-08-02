@@ -35,7 +35,7 @@ def usd(value):
 def validate_password(password):
     """Validate password: return True if password is valid, else False"""
     # Define a regex pattern for validation
-    # Require passwords to have at least one digit and one special character
-    reg = r"^(?=.*?[0-9])(?=.*?[#?!@$%^&*-])"
+    # Require passwords to have at least one digit (0-9) and one special character (#, ?, !, @, $, %, ^, &, *, -, _)
+    reg = r"^(?=.*?[0-9])(?=.*?[#?!@$%^&*-_])"
     pattern = re.compile(reg)
     return re.match(pattern, password)

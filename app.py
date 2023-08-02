@@ -166,12 +166,13 @@ def login():
         # Ensure username was submitted (This is a server-side validation)
         if not username:
             is_valid = False
-            flash("must provide username")
+            flash("Please provide username.", "danger")
 
         # Ensure password was submitted
         if not password:
             is_valid = False
-            flash("must provide password")
+            # The second argument "danger" set the category of the flash message to "danger"
+            flash("Must provide password.", "danger")
             
         if not is_valid:
             return render_template("login.html")
@@ -181,18 +182,20 @@ def login():
             rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
             rows = rows.fetchall()
         except:
-            return apology("Database error occurred", 500)
+            return apology("Database error occurred.", 500)
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], password):
             is_valid = False
-            flash("invalid username and/or password")
+            flash("Invalid username and/or password.", "danger")
             return render_template("login.html")
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
+        session["username"] = rows[0]["username"]
 
         # Redirect user to home page
+        flash("You have logged in!", "success")
         return redirect(url_for("index"))
 
     # User reached route via GET (as by clicking a link or via redirect)
@@ -226,36 +229,40 @@ def register():
         # Ensure username was submitted
         if not username:
             is_valid = False
-            flash("Must provide username")
+            flash("Please provide username.", "danger")
             
         # Ensure password was submitted
         if not password:
             is_valid = False
-            flash("Must provide password")
+            flash("Please provide password.", "danger")
         # Ensure password confirmation was submitted
         elif not confirmed_password:
             is_valid = False
-            flash("Must confirm password")
+            flash("Please confirm password", "danger")
         # Ensure password and confirmed password are matched
         elif password != confirmed_password:
             is_valid = False
-            flash("Password and confirmed password are not matched")
+            flash("Password and confirmed password are not matched.", "danger")
             
         # Ensure password is valid
         if not validate_password(password):
             is_valid = False
-            flash("Password must contain at least one digit and one special character")
+            flash("Password must contain at least one digit (0-9) and one special character (#, ?, !, @, $, %, ^, &, *, -, _).", "danger")
             
+        if not is_valid:
+            return render_template("register.html", username=username)
+        
         # Ensure the username does not exist in the database
         try:
             rows = cur.execute("SELECT * FROM users WHERE username = :username", {'username': username})
             rows = rows.fetchall()
         except:
-            return apology("Database error occurred", 500)
+            return apology("Database error occurred.", 500)
     
         if rows:
-            is_valid = False
-            flash("Username already exists")
+            flash("Username already exists.", "danger")
+            return render_template("register.html")
+        
         # Another way:
         # usernames = cur.execute("SELECT username FROM users")
         # usernames = usernames.fetchall()
@@ -275,20 +282,18 @@ def register():
                 # Get the row id of the new user after inserted into the table "users"
                 new_user_id = new_user_cur.lastrowid
         except:
-            is_valid = False
-            flash("Cannot insert user data")  
+            flash("Cannot insert user data.", "danger")  
+            return render_template("register.html", username=username)
         # Another way is to show an auto-generated error message: 
         # except Exception as e:
         #     return apology(str(e))
-        
-        if not is_valid:
-            return render_template("register.html", username=username)
         else:
             # Remember which user has logged in
             session["user_id"] = new_user_id
+            session["username"] = username
 
             # Render home page
-            flash("You have registered!")
+            flash("You have registered!", "success")
             return redirect("/")
 
     # User reached route via GET (as by clicking a link or entering the URL or via redirect)
@@ -312,7 +317,7 @@ def history():
         )
         transactions_db = transactions_db.fetchall()
     except:
-        return apology("Database error occurred", 500)
+        return apology("Database error occurred.", 500)
 
     # Add the key "balance" to each dictionary in the list of transactions
     for row in transactions_db:
@@ -353,17 +358,17 @@ def add_transactions():
         # If the input is blank
         if not account:
             is_valid = False
-            flash("Must provide account")
+            flash("Please provide account.", "danger")
 
         # If shares is not a positive integer
         if income < 0 or expense < 0:
             is_valid = False
-            flash("Income and expense must be nonnegative")
+            flash("Income and expense must be nonnegative.", "danger")
             
         # If both income and expense are 0
         if income == 0 and expense == 0:
             is_valid = False
-            flash("Either income or expense must be positive")
+            flash("Either income or expense must be positive.", "danger")
         
         if not is_valid:
             return render_template(
@@ -394,10 +399,10 @@ def add_transactions():
                     'expense': expense}
                 )
         except:
-            return apology("Database error occurred", 500)
+            return apology("Database error occurred.", 500)
 
         # Redirect user to home page
-        flash("Transactions added!")
+        flash("Transactions added!", "success")
         return redirect(url_for("index"))
     
 
@@ -426,7 +431,7 @@ def editing_transaction():
             expense=transaction_row['expense']
             )
     else:
-        return apology("An error occurred", 500)
+        return apology("An error occurred.", 500)
         
 
 
@@ -449,7 +454,7 @@ def edit_transactions():
             )
             transactions_db = transactions_db.fetchall()
         except:
-            return apology("Database error occurred", 500)
+            return apology("Database error occurred.", 500)
 
         # Add the key "balance" to each dictionary in the list of transactions
         for row in transactions_db:
@@ -486,17 +491,17 @@ def edit_transactions():
         # If the input is blank
         if not account:
             is_valid = False
-            flash("Must provide account")
+            flash("Please provide account.", "danger")
 
         # If shares is not a positive integer
         if income < 0 or expense < 0:
             is_valid = False
-            flash("Income and expense must be nonnegative")
+            flash("Income and expense must be nonnegative.", "danger")
             
         # If both income and expense are 0
         if income == 0 and expense == 0:
             is_valid = False
-            flash("Either income or expense must be positive")
+            flash("Either income or expense must be positive.", "danger")
             
         if not is_valid:
             return render_template(
@@ -533,14 +538,14 @@ def edit_transactions():
                     'expense': expense
                     }) 
         except:
-            return apology("Database error occurred", 500)
+            return apology("Database error occurred.", 500)
         
         # Redirect user to edit_transactions page
-        flash("Transactions edited!")
+        flash("Transactions edited!", "success")
         return redirect(url_for("edit_transactions"))
         
     else:
-        return apology("An error occurred", 500)
+        return apology("An error occurred.", 500)
 
 
 @app.route("/delete_transaction", methods=["POST"])
@@ -566,14 +571,14 @@ def delete_transaction():
                     'transaction_id': transaction_id
                     }) 
         except:
-            return apology("Database error occurred", 500)
+            return apology("Database error occurred.", 500)
         
         # Redirect user to edit_transactions page
-        flash("Transactions deleted!")
+        flash("Transactions deleted!", "success")
         return redirect(url_for("edit_transactions"))
         
     else:
-        return apology("An error occurred", 500)
+        return apology("An error occurred.", 500)
 
 if __name__ == "__main__":
     #  Run the flask application with debug mode as "ON"
