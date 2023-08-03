@@ -86,3 +86,27 @@ References and useful resources
     https://www.youtube.com/watch?v=byHcYRpMgI4
 
 
+
+SimpleMoney
+CS50 Final Project
+By Teerawat
+
+
+Youtube Video description: 
+- This is my final project for the course [CS50x Introduction to Computer Science](https://cs50.harvard.edu/x/2023) (by David J. Malan) in 2023.
+- This project is a web application named "SimpleMoney".
+- It is written using HTML, CSS, JavaScript, Python, SQLite, and Flask  
+- The main feature of this application is to track users' incomes and expenses.
+
+----------------------------------------------------------------
+Background Music Credit:
+Happy Life by FREDJI: https://soundcloud.com/fredjimusic 
+    https://www.facebook.com/fredjimusic/ 
+Music promoted by Audio Library https://youtu.be/u4PI5p5bI9k
+----------------------------------------------------------------
+
+Youtube Video Link: https://youtu.be/yKuGRWbwalA
+
+
+
+

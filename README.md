@@ -1,10 +1,10 @@
 
 # SimpleMoney
 
-**This is my final project for the course [CS50x Introduction to Computer Science](https://cs50.harvard.edu/x/2023) (by David J. Malan) in 2023.** 
+**This is my final project for the online course [CS50x Introduction to Computer Science](https://cs50.harvard.edu/x/2023) (by David J. Malan) in 2023.** 
 
 ## Overview
-- This project is web application named "SimpleMoney".
+- This project is a web application named "SimpleMoney".
 - It is written using HTML, CSS, JavaScript, Python, SQLite, and Flask  
 - The main feature of this application is to track users' incomes and expenses.
 
@@ -83,8 +83,7 @@
 ![Screenshot of the "History" page.](screenshots/add-transactions.png)
 
 ## Demonstration on youtube
-I made a short video to present my final project:
-???
+I made a short video to present my final project: [CS50 Final Project](https://youtu.be/yKuGRWbwalA)
 
 ## References, documentation, and some useful resources
 - CS50's Introduction to Computer Science
